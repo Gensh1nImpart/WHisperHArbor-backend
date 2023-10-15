@@ -6,6 +6,14 @@ import (
 	"time"
 )
 
+func ParseToken(token string) (*model.MyClaims, error) {
+	claims := &model.MyClaims{}
+	_, err := jwt.ParseWithClaims(token, claims, func(t *jwt.Token) (interface{}, error) {
+		return Secret, nil
+	})
+	return claims, err
+}
+
 const TokenExpireDuration = time.Hour * 6
 
 var Secret = []byte("iamshitiloveeatshithhhhasdasdszcarsakjchduiashdi")
