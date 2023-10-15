@@ -76,12 +76,14 @@ func PublicGetPost(c *gin.Context) {
 		json := make([]struct {
 			Content  string    `json:"content"`
 			Nickname string    `json:"nickname"`
+			Likes    int64     `json:"likes"`
 			Time     time.Time `json:"time"`
 		}, len(posts))
 		for i := range posts {
 			log.Println(posts[i].User)
 			json[i].Nickname = posts[i].User.Nickname
 			json[i].Time = posts[i].Time
+			json[i].Likes = posts[i].Likes
 			json[i].Content = posts[i].Content
 		}
 		c.JSON(http.StatusOK, gin.H{
@@ -131,4 +133,91 @@ func UserGetPost(c *gin.Context) {
 		}
 	}
 
+}
+
+func UserLikePost(c *gin.Context) {
+	Posts := &model.AddLikes{}
+	if err := c.ShouldBindJSON(Posts); err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"code":    400,
+			"message": "点赞失败" + string(err.Error()),
+		})
+	} else {
+		if err := service.IncrLike(*Posts); err != nil {
+			c.JSON(http.StatusOK, gin.H{
+				"code":    400,
+				"message": "点赞失败" + string(err.Error()),
+			})
+		} else {
+			c.JSON(http.StatusOK, gin.H{
+				"code":    200,
+				"message": "点赞成功",
+			})
+		}
+	}
+}
+
+func UserFavoritePost(c *gin.Context) {
+	auth := c.Request.Header.Get("Authorization")
+	claim, _ := utils.ParseToken(auth)
+	Posts := &model.AddLikes{}
+	if err := c.ShouldBindJSON(Posts); err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"code":    400,
+			"message": "收藏失败1" + string(err.Error()),
+		})
+		return
+	} else {
+		if user, err := service.GetUser(*claim); err != nil {
+			c.JSON(http.StatusOK, gin.H{
+				"code":    400,
+				"message": "收藏失败2" + string(err.Error()),
+			})
+			return
+		} else {
+			if err := service.FavoritePost(user, *Posts); err != nil {
+				c.JSON(http.StatusOK, gin.H{
+					"code":    400,
+					"message": "收藏失败3" + string(err.Error()),
+				})
+				return
+			} else {
+				c.JSON(http.StatusOK, gin.H{
+					"code":    200,
+					"message": "收藏成功",
+				})
+			}
+
+		}
+
+	}
+}
+
+func GetUserFavorites(c *gin.Context) {
+	auth := c.Request.Header.Get("Authorization")
+	claim, _ := utils.ParseToken(auth)
+	if user, err := service.GetUser(*claim); err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"code":    400,
+			"message": "获取失败" + string(err.Error()),
+		})
+		return
+	} else {
+		if postList, err := service.GetFavoritePost(user); err != nil {
+			c.JSON(http.StatusOK, gin.H{
+				"code":    400,
+				"message": "获取失败" + string(err.Error()),
+			})
+			return
+		} else {
+			postAns := make([]model.Post, len(postList))
+			for i := range postList {
+				postAns[i], _ = service.GetPost(postList[i].PostID)
+			}
+			c.JSON(http.StatusOK, gin.H{
+				"code":    200,
+				"message": postAns,
+			})
+		}
+	}
 }

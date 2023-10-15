@@ -10,6 +10,10 @@ type User struct {
 	AES      string `gorm:"type:varchar(125);not null" `
 }
 
+//func (user *User) TableName() string {
+//	return "User"
+//}
+
 type LoginUser struct {
 	Account string `json:"account"`
 	Passwd  string `json:"passwd"`

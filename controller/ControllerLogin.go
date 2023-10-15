@@ -29,7 +29,7 @@ func Login(c *gin.Context) {
 		//c.String(http.StatusOK, err.Error())
 		c.JSON(http.StatusOK, gin.H{
 			"code":    400,
-			"message": "登录失败",
+			"message": "登录失败" + err.Error(),
 		})
 		return
 	}
