@@ -33,6 +33,7 @@ func DecryptPost(value, key string) (string, error) {
 		}
 		iv := make([]byte, aes.BlockSize)
 		stream := cipher.NewCTR(block, iv)
+
 		plaintext := make([]byte, len(encoded))
 		stream.XORKeyStream(plaintext, encoded)
 
