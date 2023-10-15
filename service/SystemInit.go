@@ -35,7 +35,7 @@ func InitDB() *gorm.DB {
 	if db, err := gorm.Open(mysql.Open(args), &gorm.Config{}); err != nil {
 		panic("failed to connect the database, err:" + err.Error())
 	} else {
-		err := db.AutoMigrate(&model.User{})
+		err := db.AutoMigrate(&model.User{}, &model.Post{})
 		if err != nil {
 			panic("failed to migrate the database, err: " + err.Error())
 		}

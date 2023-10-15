@@ -22,13 +22,21 @@ func CheckeAccountExist(account string) (bool, error) {
 func Register(c *gin.Context) {
 	var user model.User
 	if err := c.ShouldBindJSON(&user); err != nil {
-		c.String(http.StatusOK, err.Error())
+		c.JSON(http.StatusOK, gin.H{
+			"code":    400,
+			"message": "格式有误!",
+		})
 		return
 	}
 	exist, err := CheckeAccountExist(user.Account)
 	if err != nil {
-		c.String(http.StatusOK, err.Error())
+		//c.String(http.StatusOK, err.Error())
+		c.JSON(http.StatusOK, gin.H{
+			"code":    400,
+			"message": "注册失败!",
+		})
 		return
+
 	}
 	if exist {
 		c.JSON(http.StatusOK, gin.H{

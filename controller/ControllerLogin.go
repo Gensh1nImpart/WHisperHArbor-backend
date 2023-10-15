@@ -26,7 +26,11 @@ func HandleLogin(userVo model.LoginUser) (bool, string) {
 func Login(c *gin.Context) {
 	var userVo model.LoginUser
 	if err := c.ShouldBindJSON(&userVo); err != nil {
-		c.String(http.StatusOK, err.Error())
+		//c.String(http.StatusOK, err.Error())
+		c.JSON(http.StatusOK, gin.H{
+			"code":    400,
+			"message": "登录失败",
+		})
 		return
 	}
 	if flag, token := HandleLogin(userVo); flag != true {

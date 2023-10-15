@@ -23,5 +23,7 @@ func MyRouter(r *gin.Engine) {
 			log.Println(claims)
 			c.String(http.StatusOK, "hello"+claims.User.Account)
 		})
+
+		authorized.POST("/post", controller.UserPost)
 	}
 }
