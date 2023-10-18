@@ -4,10 +4,11 @@ import (
 	"WHisperHArbor-backend/model"
 	"WHisperHArbor-backend/service"
 	"WHisperHArbor-backend/utils"
-	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
 	"time"
+
+	"github.com/gin-gonic/gin"
 )
 
 func UserPost(c *gin.Context) {
@@ -66,7 +67,22 @@ func HandlePost(post *model.Post) error {
 }
 
 func PublicGetPost(c *gin.Context) {
-	if posts, err := service.PublicPost(); err != nil {
+	limist := &model.Pagination{}
+	if c.ShouldBind(limist) != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"code":    400,
+			"message": "query参数错误",
+		})
+		return
+	} else {
+		if limist.Limit < 0 || limist.Limit > 100 {
+			limist.Limit = 10
+		}
+		if limist.Offset < 1 {
+			limist.Offset = 1
+		}
+	}
+	if posts, err := service.PublicPost(*limist); err != nil {
 		c.JSON(http.StatusOK, gin.H{
 			"code":    400,
 			"message": "获取列表失败",
@@ -95,6 +111,21 @@ func PublicGetPost(c *gin.Context) {
 }
 
 func UserGetPost(c *gin.Context) {
+	limist := &model.Pagination{}
+	if c.ShouldBind(limist) != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"code":    400,
+			"message": "query参数错误",
+		})
+		return
+	} else {
+		if limist.Limit < 0 || limist.Limit > 100 {
+			limist.Limit = 10
+		}
+		if limist.Offset < 1 {
+			limist.Offset = 1
+		}
+	}
 	auth := c.Request.Header.Get("Authorization")
 	claim, _ := utils.ParseToken(auth)
 	if user, err := service.GetUser(*claim); err != nil {
@@ -104,7 +135,7 @@ func UserGetPost(c *gin.Context) {
 		})
 		return
 	} else {
-		if post, err := service.UserPost(user); err != nil {
+		if post, err := service.UserPost(user, *limist); err != nil {
 			c.JSON(http.StatusOK, gin.H{
 				"code":    400,
 				"message": "获取列表失败",
@@ -194,6 +225,21 @@ func UserFavoritePost(c *gin.Context) {
 }
 
 func GetUserFavorites(c *gin.Context) {
+	limist := &model.Pagination{}
+	if c.ShouldBind(limist) != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"code":    400,
+			"message": "query参数错误",
+		})
+		return
+	} else {
+		if limist.Limit < 0 || limist.Limit > 100 {
+			limist.Limit = 10
+		}
+		if limist.Offset < 1 {
+			limist.Offset = 1
+		}
+	}
 	auth := c.Request.Header.Get("Authorization")
 	claim, _ := utils.ParseToken(auth)
 	if user, err := service.GetUser(*claim); err != nil {
@@ -203,7 +249,7 @@ func GetUserFavorites(c *gin.Context) {
 		})
 		return
 	} else {
-		if postList, err := service.GetFavoritePost(user); err != nil {
+		if postList, err := service.GetFavoritePost(user, *limist); err != nil {
 			c.JSON(http.StatusOK, gin.H{
 				"code":    400,
 				"message": "获取失败" + string(err.Error()),

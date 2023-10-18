@@ -18,19 +18,19 @@ func GetUser(claim model.MyClaims) (model.User, error) {
 	}
 }
 
-func UserPost(claim model.User) ([]model.Post, error) {
+func UserPost(claim model.User, limit model.Pagination) ([]model.Post, error) {
 	var posts []model.Post
-	if err := model.DB.Where("user_id = ?", claim.ID).Find(&posts).Error; err != nil {
+	if err := model.DB.Where("user_id = ?", claim.ID).Limit(limit.Limit).Offset(limit.Offset).Find(&posts).Error; err != nil {
 		return posts, err
 	} else {
 		return posts, nil
 	}
 }
 
-func PublicPost() ([]model.Post, error) {
+func PublicPost(limit model.Pagination) ([]model.Post, error) {
 	var posts []model.Post
-	if err := model.DB.Preload("User").Where("encrypted = ?", false).Find(&posts).Error; err != nil {
-		return posts, nil
+	if err := model.DB.Preload("User").Where("encrypted = ?", false).Limit(limit.Limit).Offset(limit.Offset).Find(&posts).Error; err != nil {
+		return posts, err
 	} else {
 		return posts, nil
 	}
@@ -64,9 +64,9 @@ func FavoritePost(claim model.User, post model.AddLikes) error {
 	}
 }
 
-func GetFavoritePost(user model.User) ([]model.Favorites, error) {
+func GetFavoritePost(user model.User, limit model.Pagination) ([]model.Favorites, error) {
 	var posts []model.Favorites
-	err := model.DB.Where("user_id = ?", user.ID).Find(&posts).Error
+	err := model.DB.Where("user_id = ?", user.ID).Limit(limit.Limit).Offset(limit.Offset).Find(&posts).Error
 	return posts, err
 }
 
