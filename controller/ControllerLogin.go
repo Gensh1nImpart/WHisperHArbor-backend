@@ -3,8 +3,9 @@ package controller
 import (
 	"WHisperHArbor-backend/model"
 	"WHisperHArbor-backend/utils"
-	"github.com/gin-gonic/gin"
 	"net/http"
+
+	"github.com/gin-gonic/gin"
 )
 
 func HandleLogin(userVo model.LoginUser) (bool, string) {
@@ -26,16 +27,15 @@ func HandleLogin(userVo model.LoginUser) (bool, string) {
 func Login(c *gin.Context) {
 	var userVo model.LoginUser
 	if err := c.ShouldBindJSON(&userVo); err != nil {
-		//c.String(http.StatusOK, err.Error())
 		c.JSON(http.StatusOK, gin.H{
 			"code":    400,
-			"message": "登录失败" + err.Error(),
+			"message": "登录失败1" + err.Error(),
 		})
 		return
 	}
 	if flag, token := HandleLogin(userVo); flag != true {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "登录失败",
+			"message": "登录失败2",
 			"code":    "400",
 		})
 	} else {

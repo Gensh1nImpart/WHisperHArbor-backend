@@ -2,8 +2,9 @@ package utils
 
 import (
 	"WHisperHArbor-backend/model"
-	"github.com/golang-jwt/jwt/v4"
 	"time"
+
+	"github.com/golang-jwt/jwt/v4"
 )
 
 func ParseToken(token string) (*model.MyClaims, error) {

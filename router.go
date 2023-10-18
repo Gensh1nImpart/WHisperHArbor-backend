@@ -4,9 +4,9 @@ import (
 	"WHisperHArbor-backend/controller"
 	"WHisperHArbor-backend/middleware"
 	"WHisperHArbor-backend/utils"
-	"github.com/gin-gonic/gin"
-	"log"
 	"net/http"
+
+	"github.com/gin-gonic/gin"
 )
 
 func MyRouter(r *gin.Engine) {
@@ -19,9 +19,17 @@ func MyRouter(r *gin.Engine) {
 	{
 		authorized.GET("/sayhello", func(c *gin.Context) {
 			auth := c.Request.Header.Get("Authorization")
-			claims, _ := utils.ParseToken(auth)
-			log.Println(claims)
-			c.String(http.StatusOK, "hello"+claims.User.Account)
+			if claims, err := utils.ParseToken(auth); err != nil {
+				c.JSON(http.StatusOK, gin.H{
+					"code": 400,
+					"msg":  "token error",
+				})
+			} else {
+				c.JSON(http.StatusOK, gin.H{
+					"code": 200,
+					"msg":  "hello" + claims.User.Account,
+				})
+			}
 		})
 		authorized.GET("/personalPost", controller.UserGetPost)
 		authorized.GET("/publicPost", controller.PublicGetPost)
