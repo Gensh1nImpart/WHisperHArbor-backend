@@ -1,9 +1,9 @@
 mysql:
   host: 127.0.0.1
-  port: 3306
+  port: 5508
   database: WHHA
   user: root
-  passwd: 123321
+  passwd: root
   charset: utf8mb4
 base:
   port: 8000

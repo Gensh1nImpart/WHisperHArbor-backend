@@ -35,8 +35,8 @@ func MyRouter(r *gin.Engine) {
 		authorized.GET("/publicPost", controller.PublicGetPost)
 		authorized.GET("/personalFavorites", controller.GetUserFavorites)
 		authorized.POST("/PostLikes", controller.UserLikePost)
-
 		authorized.POST("/FavoritePost", controller.UserFavoritePost)
 		authorized.POST("/post", controller.UserPost)
+		authorized.GET("/ws", controller.ServeWS)
 	}
 }
