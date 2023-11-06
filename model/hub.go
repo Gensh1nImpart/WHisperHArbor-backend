@@ -1,7 +1,9 @@
 package model
 
 import (
+	"math/rand"
 	"strconv"
+	"strings"
 )
 
 type Hub struct {
@@ -60,6 +62,22 @@ func (h *Hub) Run() {
 					delete(h.Clients, client)
 				}
 			}
+			go func() {
+				h.HandleMessage(*message)
+			}()
 		}
 	}
+}
+
+var (
+	AI_names = []string{"赵老师", "钱老师", "来大人", "孙老师", "小杰子", "Mslxl", "bt"}
+)
+
+func (h *Hub) HandleMessage(msg Message) {
+	if strings.Contains(string(msg.Msg), "?") || strings.Contains(string(msg.Msg), "？") || strings.Contains(string(msg.Msg), "吗") {
+		msg.Msg = []byte(strings.ReplaceAll(string(msg.Msg), "?", "!"))
+		msg.Msg = []byte(strings.ReplaceAll(string(msg.Msg), "？", "!"))
+		msg.Msg = []byte(strings.ReplaceAll(string(msg.Msg), "吗", ""))
+	}
+	h.Broadcast <- &Message{Msg: msg.Msg, User: []byte(AI_names[rand.Intn(len(AI_names))]), Type: 0}
 }
