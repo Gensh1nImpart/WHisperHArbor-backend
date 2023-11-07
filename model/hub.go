@@ -4,15 +4,15 @@ import (
 	"math/rand"
 	"strconv"
 	"strings"
-	"sync"
+	"time"
 )
 
 type Hub struct {
 	Clients    map[*Client]bool
+	Count      int
 	Broadcast  chan *Message
 	Register   chan *Client
 	Unregister chan *Client
-	mu         sync.RWMutex
 }
 
 func NewHub() *Hub {
@@ -21,24 +21,19 @@ func NewHub() *Hub {
 		Register:   make(chan *Client),
 		Clients:    make(map[*Client]bool),
 		Unregister: make(chan *Client),
+		Count:      0,
 	}
 }
 
 func (h *Hub) getMessage(name string, Type int) {
+	//log.Println(name, Type)
+	time.Sleep(time.Microsecond * 20)
 	if Type == 1 {
-		message := &Message{Msg: []byte(name + "上线了，当前在线人数: " + strconv.Itoa(len(h.Clients))), User: []byte("System"), Type: 0}
-		go func() {
-			h.mu.Lock()
-			defer h.mu.Unlock()
-			h.Broadcast <- message
-		}()
+		message := &Message{Msg: []byte(name + "上线了，当前在线人数: " + strconv.Itoa(h.Count)), User: []byte("System"), Type: 0}
+		h.Broadcast <- message
 	} else {
-		message := &Message{Msg: []byte(name + "走了，当前在线人数: " + strconv.Itoa(len(h.Clients))), User: []byte("System"), Type: 0}
-		go func() {
-			h.mu.Lock()
-			defer h.mu.Unlock()
-			h.Broadcast <- message
-		}()
+		message := &Message{Msg: []byte(name + "走了，当前在线人数: " + strconv.Itoa(h.Count)), User: []byte("System"), Type: 0}
+		h.Broadcast <- message
 	}
 }
 
@@ -47,15 +42,17 @@ func (h *Hub) Run() {
 		select {
 		case client := <-h.Register:
 			h.Clients[client] = true
-			//go func() {
-			//	h.getMessage(string(client.User), 1)
-			//}()
+			h.Count++
+			go func() {
+				h.getMessage(string(client.User), 1)
+			}()
 		case client := <-h.Unregister:
 			if _, ok := h.Clients[client]; ok {
 				delete(h.Clients, client)
-				//go func() {
-				//	h.getMessage(string(client.User), 0)
-				//}()
+				h.Count--
+				go func() {
+					h.getMessage(string(client.User), 0)
+				}()
 				close(client.Send)
 			}
 		case message := <-h.Broadcast:
@@ -67,9 +64,10 @@ func (h *Hub) Run() {
 					delete(h.Clients, client)
 				}
 			}
-			//go func() {
-			//	h.HandleMessage(*message)
-			//}()
+			go func() {
+				time.Sleep(time.Microsecond * 20)
+				h.HandleMessage(*message)
+			}()
 		}
 	}
 }
@@ -79,8 +77,6 @@ var (
 )
 
 func (h *Hub) HandleMessage(msg Message) {
-	h.mu.Lock()
-	defer h.mu.Unlock()
 	if strings.Contains(string(msg.Msg), "?") || strings.Contains(string(msg.Msg), "？") || strings.Contains(string(msg.Msg), "吗") {
 		msg.Msg = []byte(strings.ReplaceAll(string(msg.Msg), "?", "!"))
 		msg.Msg = []byte(strings.ReplaceAll(string(msg.Msg), "？", "!"))
