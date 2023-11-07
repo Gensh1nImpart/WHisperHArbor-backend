@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"github.com/gorilla/websocket"
 	"log"
-	"net/http"
 	"strconv"
 	"time"
 )
@@ -22,22 +21,14 @@ const (
 
 var (
 	newline = []byte{'\n'}
-	sapce   = []byte{' '}
+	space   = []byte{' '}
 )
-
-var Upgrader = websocket.Upgrader{
-	ReadBufferSize:  1024,
-	WriteBufferSize: 1024,
-	CheckOrigin: func(r *http.Request) bool {
-		return true
-	},
-}
 
 type Client struct {
 	Hub  *Hub
 	Conn *websocket.Conn
 	Send chan Message
-	User *LoginUser
+	User []byte
 }
 
 func (c *Client) ReadPump() {
@@ -47,10 +38,7 @@ func (c *Client) ReadPump() {
 	}()
 	c.Conn.SetReadLimit(maxMessageSize)
 	c.Conn.SetReadDeadline(time.Now().Add(pongWait))
-	c.Conn.SetPongHandler(func(string) error {
-		c.Conn.SetReadDeadline(time.Now().Add(pongWait))
-		return nil
-	})
+	c.Conn.SetPongHandler(func(string) error { c.Conn.SetReadDeadline(time.Now().Add(pongWait)); return nil })
 	for {
 		_, message, err := c.Conn.ReadMessage()
 		if err != nil {
@@ -59,8 +47,8 @@ func (c *Client) ReadPump() {
 			}
 			break
 		}
-		message = bytes.TrimSpace(bytes.Replace(message, newline, sapce, -1))
-		c.Hub.Broadcast <- &Message{Msg: message, User: []byte(c.User.Account), Type: 1}
+		message = bytes.TrimSpace(bytes.Replace(message, newline, space, -1))
+		c.Hub.Broadcast <- &Message{Msg: message, User: c.User, Type: 1}
 	}
 }
 

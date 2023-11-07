@@ -4,6 +4,7 @@ import (
 	"math/rand"
 	"strconv"
 	"strings"
+	"sync"
 )
 
 type Hub struct {
@@ -11,6 +12,7 @@ type Hub struct {
 	Broadcast  chan *Message
 	Register   chan *Client
 	Unregister chan *Client
+	mu         sync.RWMutex
 }
 
 func NewHub() *Hub {
@@ -22,11 +24,21 @@ func NewHub() *Hub {
 	}
 }
 
-func (h *Hub) getMessage(name string, Type int) string {
+func (h *Hub) getMessage(name string, Type int) {
 	if Type == 1 {
-		return name + "上线了，当前在线人数: " + strconv.Itoa(len(h.Clients))
+		message := &Message{Msg: []byte(name + "上线了，当前在线人数: " + strconv.Itoa(len(h.Clients))), User: []byte("System"), Type: 0}
+		go func() {
+			h.mu.Lock()
+			defer h.mu.Unlock()
+			h.Broadcast <- message
+		}()
 	} else {
-		return name + "走了，当前在线人数: " + strconv.Itoa(len(h.Clients))
+		message := &Message{Msg: []byte(name + "走了，当前在线人数: " + strconv.Itoa(len(h.Clients))), User: []byte("System"), Type: 0}
+		go func() {
+			h.mu.Lock()
+			defer h.mu.Unlock()
+			h.Broadcast <- message
+		}()
 	}
 }
 
@@ -35,36 +47,29 @@ func (h *Hub) Run() {
 		select {
 		case client := <-h.Register:
 			h.Clients[client] = true
-			message := &Message{Msg: []byte(h.getMessage(client.User.Account, 1)), User: []byte("System"), Type: 0}
-			go func() {
-				h.Broadcast <- message
-			}()
+			//go func() {
+			//	h.getMessage(string(client.User), 1)
+			//}()
 		case client := <-h.Unregister:
 			if _, ok := h.Clients[client]; ok {
 				delete(h.Clients, client)
-				message := &Message{Msg: []byte(h.getMessage(client.User.Account, 0)), User: []byte("System"), Type: 0}
-				go func() {
-					h.Broadcast <- message
-				}()
+				//go func() {
+				//	h.getMessage(string(client.User), 0)
+				//}()
 				close(client.Send)
 			}
-
 		case message := <-h.Broadcast:
 			for client := range h.Clients {
 				select {
 				case client.Send <- *message:
 				default:
 					close(client.Send)
-					message := &Message{Msg: []byte(h.getMessage(client.User.Account, 0)), User: []byte("System"), Type: 0}
-					go func() {
-						h.Broadcast <- message
-					}()
 					delete(h.Clients, client)
 				}
 			}
-			go func() {
-				h.HandleMessage(*message)
-			}()
+			//go func() {
+			//	h.HandleMessage(*message)
+			//}()
 		}
 	}
 }
@@ -74,10 +79,16 @@ var (
 )
 
 func (h *Hub) HandleMessage(msg Message) {
+	h.mu.Lock()
+	defer h.mu.Unlock()
 	if strings.Contains(string(msg.Msg), "?") || strings.Contains(string(msg.Msg), "？") || strings.Contains(string(msg.Msg), "吗") {
 		msg.Msg = []byte(strings.ReplaceAll(string(msg.Msg), "?", "!"))
 		msg.Msg = []byte(strings.ReplaceAll(string(msg.Msg), "？", "!"))
 		msg.Msg = []byte(strings.ReplaceAll(string(msg.Msg), "吗", ""))
+		message := &Message{Msg: msg.Msg, User: []byte(AI_names[rand.Intn(len(AI_names))]), Type: 0}
+		go func() {
+			h.Broadcast <- message
+		}()
 	}
-	h.Broadcast <- &Message{Msg: msg.Msg, User: []byte(AI_names[rand.Intn(len(AI_names))]), Type: 0}
+
 }

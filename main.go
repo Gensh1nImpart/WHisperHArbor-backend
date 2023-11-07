@@ -10,11 +10,11 @@ func init() {
 	model.MyConfig = service.ReadConfig()
 	model.DB = service.InitDB()
 	model.MyHub = model.NewHub()
+	go model.MyHub.Run()
 }
 
 func main() {
 	r := gin.Default()
-	go model.MyHub.Run()
 	MyRouter(r)
 	r.Run(":" + model.MyConfig.Base.Port)
 }
