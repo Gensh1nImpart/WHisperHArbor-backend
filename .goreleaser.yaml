@@ -1,22 +1,48 @@
-project_name: WHHA
+before:
+  hooks:
+    - go mod tidy
+
 builds:
-  - env: [ CGO_ENABLED=0 ]
+  - env:
+      - CGO_ENABLED=0
     goos:
-      - linux
       - windows
+      - linux
       - darwin
+    goarch:
+      - 386
+      - amd64
+      - arm
+      - arm64
+      - mips
+      - mipsle
+      - mips64
+      - mips64le
+    goarm:
+      - 6
+      - 7
+
+    ignore:
+      - goos: darwin
+        goarch: 386
+
+archive:
+  name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}"
+  wrap_in_directory: true
+  format: tar.gz
+  format_overrides:
+    - goos: windows
+      format: zip
+  files:
+    - LICENSE
+    - README.md
+    - config/**/*
+    - systemd/*
+
+# https://goreleaser.com/snapshots/
+snapshot:
+  name_template: "dev@{{.ShortCommit}}"
+
+# https://goreleaser.com/checksum/
 checksum:
-  name_template: 'checksums.txt'
-archives:
-  - replacements:
-      linux: Linux
-      windows: Windows
-      darwin: MacOs
-      386: i386
-      amd64: x86_64
-    format_overrides:
-      - goos: windows
-        format: zip
-    files:
-      - README.md
-      - config.yaml
+  name_template: "{{ .ProjectName }}_{{ .Version }}_checksums.txt"
