@@ -4,7 +4,6 @@ import (
 	"WHisperHArbor-backend/model"
 	"WHisperHArbor-backend/service"
 	"WHisperHArbor-backend/utils"
-	"log"
 	"net/http"
 	"time"
 
@@ -96,7 +95,6 @@ func PublicGetPost(c *gin.Context) {
 			Time     time.Time `json:"time"`
 		}, len(posts))
 		for i := range posts {
-			log.Println(posts[i].User)
 			json[i].Nickname = posts[i].User.Nickname
 			json[i].Time = posts[i].Time
 			json[i].Likes = posts[i].Likes

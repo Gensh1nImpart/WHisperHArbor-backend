@@ -1,9 +1,0 @@
-mysql:
-  host: 127.0.0.1
-  port: 5508
-  database: WHHA
-  user: root
-  passwd: root
-  charset: utf8mb4
-base:
-  port: 8000

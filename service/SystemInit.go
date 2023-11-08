@@ -12,7 +12,16 @@ import (
 func ReadConfig() *model.Config {
 	co := &model.Config{}
 	if configFile, err := ioutil.ReadFile("config.yaml"); err != nil {
-		panic("failed to read the config.yaml, err: " + err.Error())
+		configData, err := yaml.Marshal(co)
+		if err != nil {
+			panic("failed to marshal default config, err: " + err.Error())
+		}
+
+		err = ioutil.WriteFile("config.yaml", configData, 0644)
+		if err != nil {
+			panic("failed to write default config to file, err: " + err.Error())
+		}
+		panic("")
 	} else {
 		if err = yaml.Unmarshal(configFile, co); err != nil {
 			panic("failed to unmarshal the config.yaml, err: " + err.Error())
