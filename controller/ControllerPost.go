@@ -5,6 +5,7 @@ import (
 	"WHisperHArbor-backend/service"
 	"WHisperHArbor-backend/utils"
 	"net/http"
+	"sort"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -100,6 +101,9 @@ func PublicGetPost(c *gin.Context) {
 			json[i].Likes = posts[i].Likes
 			json[i].Content = posts[i].Content
 		}
+		sort.Slice(json, func(i, j int) bool {
+			return json[i].Time.After(json[j].Time)
+		})
 		c.JSON(http.StatusOK, gin.H{
 			"code":    200,
 			"message": json,
