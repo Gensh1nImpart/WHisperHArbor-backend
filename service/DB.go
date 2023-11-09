@@ -20,7 +20,7 @@ func GetUser(claim model.MyClaims) (model.User, error) {
 
 func UserPost(claim model.User, limit model.Pagination) ([]model.Post, error) {
 	var posts []model.Post
-	if err := model.DB.Where("user_id = ?", claim.ID).Limit(limit.Limit).Offset(limit.Offset).Find(&posts).Error; err != nil {
+	if err := model.DB.Where("user_id = ?", claim.ID).Order("time desc").Limit(limit.Limit).Offset(limit.Offset).Find(&posts).Error; err != nil {
 		return posts, err
 	} else {
 		return posts, nil
@@ -29,7 +29,7 @@ func UserPost(claim model.User, limit model.Pagination) ([]model.Post, error) {
 
 func PublicPost(limit model.Pagination) ([]model.Post, error) {
 	var posts []model.Post
-	if err := model.DB.Preload("User").Where("encrypted = ?", false).Limit(limit.Limit).Offset(limit.Offset).Find(&posts).Error; err != nil {
+	if err := model.DB.Preload("User").Where("encrypted = ?", false).Order("time desc").Limit(limit.Limit).Offset(limit.Offset).Find(&posts).Error; err != nil {
 		return posts, err
 	} else {
 		return posts, nil

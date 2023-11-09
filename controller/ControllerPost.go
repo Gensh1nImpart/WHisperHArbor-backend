@@ -5,7 +5,6 @@ import (
 	"WHisperHArbor-backend/service"
 	"WHisperHArbor-backend/utils"
 	"net/http"
-	"sort"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -101,9 +100,9 @@ func PublicGetPost(c *gin.Context) {
 			json[i].Likes = posts[i].Likes
 			json[i].Content = posts[i].Content
 		}
-		sort.Slice(json, func(i, j int) bool {
-			return json[i].Time.After(json[j].Time)
-		})
+		//sort.Slice(json, func(i, j int) bool {
+		//	return json[i].Time.After(json[j].Time)
+		//})
 		c.JSON(http.StatusOK, gin.H{
 			"code":    200,
 			"message": json,
@@ -144,8 +143,13 @@ func UserGetPost(c *gin.Context) {
 			})
 			return
 		} else {
-			temp_post := post
-			for i, _ := range temp_post {
+			json := make([]struct {
+				Content  string    `json:"content"`
+				Nickname string    `json:"nickname"`
+				Likes    int64     `json:"likes"`
+				Time     time.Time `json:"time"`
+			}, len(post))
+			for i, _ := range post {
 				if post[i].Encrypted == true {
 					if content, err := utils.DecryptPost(post[i].Content, user.AES); err != nil {
 						c.JSON(http.StatusOK, gin.H{
@@ -154,14 +158,20 @@ func UserGetPost(c *gin.Context) {
 						})
 						return
 					} else {
-						temp_post[i].Content = content
+						json[i].Content = content
+						json[i].Nickname = post[i].User.Nickname
+						json[i].Likes = post[i].Likes
+						json[i].Time = post[i].Time
 					}
 				}
-				temp_post[i].User = model.User{}
+				json[i].Content = post[i].Content
+				json[i].Nickname = post[i].User.Nickname
+				json[i].Likes = post[i].Likes
+				json[i].Time = post[i].Time
 			}
 			c.JSON(http.StatusOK, gin.H{
 				"code": 200,
-				"data": temp_post,
+				"data": json,
 			})
 		}
 	}
