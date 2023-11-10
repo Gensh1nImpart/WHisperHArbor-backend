@@ -10,6 +10,12 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+/*
+@ 发表帖子
+@ method: Post
+@ Headers: Authorization
+@ Parmas: Json{}: Post
+*/
 func UserPost(c *gin.Context) {
 	auth := c.Request.Header.Get("Authorization")
 	claim, _ := utils.ParseToken(auth)
@@ -65,6 +71,12 @@ func HandlePost(post *model.Post) error {
 	}
 }
 
+/*
+@ 获取所有用户公开的帖子
+@ method: GET
+@ Headers: Authorization
+@ Parmas: limist
+*/
 func PublicGetPost(c *gin.Context) {
 	limist := &model.Pagination{}
 	if c.ShouldBind(limist) != nil {
@@ -111,6 +123,12 @@ func PublicGetPost(c *gin.Context) {
 	}
 }
 
+/*
+@ 获取用户的帖子
+@ method: GET
+@ Headers: Authorization
+@ Parmas: limist
+*/
 func UserGetPost(c *gin.Context) {
 	limist := &model.Pagination{}
 	if c.ShouldBind(limist) != nil {
@@ -178,6 +196,12 @@ func UserGetPost(c *gin.Context) {
 
 }
 
+/*
+@ 点赞帖子
+@ method: POST
+@ Headers: Authorization
+@ Parmas: Json{}:PostId
+*/
 func UserLikePost(c *gin.Context) {
 	Posts := &model.AddLikes{}
 	if err := c.ShouldBindJSON(Posts); err != nil {
@@ -200,6 +224,12 @@ func UserLikePost(c *gin.Context) {
 	}
 }
 
+/*
+@ 收藏帖子
+@ method: Post
+@ Headers: Authorization
+@ Parmas: Json{}: PostID
+*/
 func UserFavoritePost(c *gin.Context) {
 	auth := c.Request.Header.Get("Authorization")
 	claim, _ := utils.ParseToken(auth)
@@ -236,6 +266,12 @@ func UserFavoritePost(c *gin.Context) {
 	}
 }
 
+/*
+@ 获取用户喜爱的帖子
+@ method: GET
+@ Headers: Authorization
+@ Parmas: limist
+*/
 func GetUserFavorites(c *gin.Context) {
 	limist := &model.Pagination{}
 	if c.ShouldBind(limist) != nil {

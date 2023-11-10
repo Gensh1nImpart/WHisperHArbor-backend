@@ -13,6 +13,11 @@ var upgrader = websocket.Upgrader{
 	WriteBufferSize: 1024,
 }
 
+/*
+@ 获取Websocket，http升级为长轮寻
+@ method: GET
+@ Headers: Authorization
+*/
 func ServeWS(c *gin.Context) {
 	auth := c.Request.Header.Get("Authorization")
 	claim, _ := utils.ParseToken(auth)
