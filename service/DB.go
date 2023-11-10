@@ -27,6 +27,14 @@ func UserPost(claim model.User, limit model.Pagination) ([]model.Post, error) {
 	}
 }
 
+func ModifyPasswd(claim model.MyClaims, NewPass string) (bool, error) {
+	if err := model.DB.Model(&model.User{}).Where("account = ?", claim.User.Account).Update("passwd", NewPass).Error; err != nil {
+		return false, err
+	} else {
+		return true, nil
+	}
+}
+
 func PublicPost(limit model.Pagination) ([]model.Post, error) {
 	var posts []model.Post
 	if err := model.DB.Preload("User").Where("encrypted = ?", false).Order("time desc").Limit(limit.Limit).Offset(limit.Offset).Find(&posts).Error; err != nil {

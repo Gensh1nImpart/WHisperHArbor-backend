@@ -37,6 +37,7 @@ func MyRouter(r *gin.Engine) {
 		authorized.POST("/PostLikes", controller.UserLikePost)
 		authorized.POST("/FavoritePost", controller.UserFavoritePost)
 		authorized.POST("/post", controller.UserPost)
+		authorized.POST("/modifyPasswd", controller.ModifyPasswd)
 		authorized.GET("/ws", controller.ServeWS)
 	}
 }
