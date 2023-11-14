@@ -31,6 +31,28 @@ func ReadConfig() *model.Config {
 	}
 }
 
+func ReadEmail() *model.Email {
+	co := &model.Email{}
+	if configFile, err := ioutil.ReadFile("email.yaml"); err != nil {
+		configData, err := yaml.Marshal(co)
+		if err != nil {
+			panic("failed to marshal default config, err: " + err.Error())
+		}
+
+		err = ioutil.WriteFile("email.yaml", configData, 0644)
+		if err != nil {
+			panic("failed to write default config to file, err: " + err.Error())
+		}
+		panic("")
+	} else {
+		if err = yaml.Unmarshal(configFile, co); err != nil {
+			panic("failed to unmarshal the config.yaml, err: " + err.Error())
+		} else {
+			return co
+		}
+	}
+}
+
 func InitDB() *gorm.DB {
 	args := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=%s&parseTime=true&loc=Local",
 		model.MyConfig.Mysql.User,

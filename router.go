@@ -14,6 +14,7 @@ func MyRouter(r *gin.Engine) {
 	{
 		authapi.POST("/login", controller.Login)
 		authapi.POST("/register", controller.Register)
+		authapi.GET("/verify/:key", controller.HandleVerify)
 	}
 	authorized := r.Group("/v1/api", middleware.JWTAuth)
 	{

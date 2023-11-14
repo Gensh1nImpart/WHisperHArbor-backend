@@ -14,6 +14,8 @@ func init() {
 	model.MyConfig = service.ReadConfig()
 	model.DB = service.InitDB()
 	model.MyHub = model.NewHub()
+	model.MyRedis = service.InitializeStore()
+	model.MyMail = service.ReadEmail()
 	go model.MyHub.Run()
 }
 

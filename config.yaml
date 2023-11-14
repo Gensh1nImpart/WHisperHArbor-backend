@@ -7,3 +7,8 @@ mysql:
     charset: utf8mb4
 base:
     port: 8000
+redis:
+    Addr: 127.0.0.1:6379
+    Passwd: "123321"
+    DB: 0
+    CacheDuration: "4380h"

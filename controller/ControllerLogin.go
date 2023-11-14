@@ -2,6 +2,7 @@ package controller
 
 import (
 	"WHisperHArbor-backend/model"
+	"WHisperHArbor-backend/service"
 	"WHisperHArbor-backend/utils"
 	"net/http"
 
@@ -11,13 +12,17 @@ import (
 func HandleLogin(userVo model.LoginUser) (bool, string) {
 	user := model.User{}
 	if err := model.DB.Where("account = ?", userVo.Account).First(&user).Error; err != nil {
-		return false, ""
+		return false, err.Error()
 	} else {
+		if user.Verify == false {
+			go service.LoginWithOutVerify(user.Mail)
+			return false, "未验证, 请查看邮箱验证邮件"
+		}
 		if !utils.PasswdVerify(userVo.Passwd, user.Passwd) {
-			return false, ""
+			return false, "密码错误"
 		}
 		if token, err := utils.GenerateToken(userVo); err != nil {
-			return false, ""
+			return false, "未知错误"
 		} else {
 			return true, token
 		}
@@ -29,13 +34,13 @@ func Login(c *gin.Context) {
 	if err := c.ShouldBindJSON(&userVo); err != nil {
 		c.JSON(http.StatusOK, gin.H{
 			"code":    400,
-			"message": "登录失败1" + err.Error(),
+			"message": "登录失败 " + err.Error(),
 		})
 		return
 	}
 	if flag, token := HandleLogin(userVo); flag != true {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "登录失败2",
+			"message": "登录失败 " + token,
 			"code":    "400",
 		})
 	} else {
@@ -45,20 +50,4 @@ func Login(c *gin.Context) {
 			"token":   token,
 		})
 	}
-	/*
-		Just For Test
-		var db = &model.LoginUser{Account: "test", Passwd: "123321"}
-		if userVo.Account == db.Account && userVo.Passwd == db.Passwd {
-			token, _ := utils.GenerateToken(userVo)
-			c.JSON(http.StatusOK, gin.H{
-				"code": 201,
-				"jwt":  token,
-				"msg":  "登录成功",
-			})
-			return
-		} else {
-			c.String(http.StatusOK, "error")
-		}
-		return
-	*/
 }

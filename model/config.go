@@ -12,4 +12,17 @@ type Config struct {
 	Base struct {
 		Port string `yaml:"port"`
 	} `yaml:"base"`
+	Redis struct {
+		Addr          string `yaml:"Addr"`
+		Passwd        string `yaml:"Passwd"`
+		DB            string `yaml:"DB"`
+		CacheDuration string `yaml:"CacheDuration"`
+	} `yaml:"redis"`
+}
+
+type Email struct {
+	Server  string `yaml:"server"`
+	Port    string `yaml:"port"`
+	Account string `yaml:"account"`
+	Passwd  string `yaml:"passwd"`
 }

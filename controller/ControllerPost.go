@@ -5,6 +5,7 @@ import (
 	"WHisperHArbor-backend/service"
 	"WHisperHArbor-backend/utils"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -131,20 +132,8 @@ func PublicGetPost(c *gin.Context) {
 */
 func UserGetPost(c *gin.Context) {
 	limist := &model.Pagination{}
-	if c.ShouldBind(limist) != nil {
-		c.JSON(http.StatusOK, gin.H{
-			"code":    400,
-			"message": "query参数错误",
-		})
-		return
-	} else {
-		if limist.Limit < 0 || limist.Limit > 100 {
-			limist.Limit = 10
-		}
-		if limist.Offset < 1 {
-			limist.Offset = 1
-		}
-	}
+	limist.Limit, _ = strconv.Atoi(c.DefaultQuery("limit", "10"))
+	limist.Offset, _ = strconv.Atoi(c.DefaultQuery("offset", "0"))
 	auth := c.Request.Header.Get("Authorization")
 	claim, _ := utils.ParseToken(auth)
 	if user, err := service.GetUser(*claim); err != nil {
